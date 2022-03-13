@@ -4,21 +4,19 @@ import Data.Time.Calendar
 import Data.Maybe
 import Data.Typeable
 
--- printMonth :: Int -> Int
--- printMonth days = 28
---    where 
-
 checkLeapYear :: Bool -> Integer -> Integer
-checkLeapYear leap diff = if (leap && diff > 168) then diff -1 else diff -- 168 = 28 * 6, halbes Jahr vorbei
+checkLeapYear leap diff = if (leap && diff > 168) then diff -1 else diff -- 168 = 28 * 6, halbes Jahr vorbei, 168 nicht doppelt, da Programm zuerst abgebrochen wird
 
 checkSpecialDay :: Bool -> Integer -> String
--- checkSpecialDay leap dayOfYear = if (leap && dayOfYear == 168) then "Leap Day" else if (leap && dayOfYear == 365 || (not leap && dayOfYear == 364 ) then "Year Day"
 checkSpecialDay leap dayOfYear 
    | leap && dayOfYear == 168     = "Leap Day"
    | leap && dayOfYear == 365     = "Year Day1"
    | not leap && dayOfYear == 364 = "Year Day2"
    | otherwise                    = ""
 
+
+-- isValidInput :: IO () -> Bool
+-- isValidInput 
 
 toMonth :: Int -> String
 toMonth x = case x of
@@ -49,6 +47,12 @@ toWeekday x = case mod x 7 of
    6 -> "Saturday"
    otherwise -> "error"
 
+beautifyDay :: Integer -> String
+beautifyDay x = if x < 10 then "0" ++ show x else show x
+
+-- getInput :: IO () -> Int
+-- getInput getLine = getLine 
+
 main = do
    putStrLn "Please enter three positive integer numbers (year month day) separated by one or more blank spaces or type quit."
    input1 <- getLine
@@ -70,13 +74,13 @@ main = do
 
    let leapYear = isLeapYear yearInt
 
-   let specialDay = (checkSpecialDay leapYear diff) -- check with day number before changing for leap
+   let specialDay = checkSpecialDay leapYear diff -- check with day number before changing for leap
 
-   putStrLn specialDay
+   -- putStrLn specialDay
 
    let dayOfYear = checkLeapYear leapYear diff
 
-   print dayOfYear 
+   -- print dayOfYear 
 
    if specialDay /= ""
       then do 
@@ -89,11 +93,11 @@ main = do
 
    let day = mod dayOfYear 28
 
-   print month
-   print (toMonth month)
-   print day
-   putStrLn (toWeekday day)
+   -- print month
+   -- print (toMonth month)
+   -- print day
+   -- putStrLn (toWeekday day)
 
-   let result = input1 ++ (" " ++ (toMonth month)) ++ " " ++ show (day + 1) ++ " (" ++ (toWeekday day) ++")"
+   let result = input1 ++ (" " ++ (toMonth month)) ++ " " ++ beautifyDay (day + 1) ++ " (" ++ (toWeekday day) ++")"
 
    putStrLn result
