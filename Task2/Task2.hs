@@ -111,7 +111,8 @@ conversion = do
 
    let month = fromInteger (div dayOfYear 28)
    let day = mod dayOfYear 28
-   let result = input1 ++ (" " ++ (toMonth month)) ++ " " ++ beautifyDay (day + 1) ++ " (" ++ (toWeekday day) ++")"
+   let year = show (fromJust test1) -- remove leading zeroes
+   let result = year ++ (" " ++ (toMonth month)) ++ " " ++ beautifyDay (day + 1) ++ " (" ++ (toWeekday day) ++")"
 
    putStrLn result
 
