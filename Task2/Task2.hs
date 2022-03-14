@@ -67,22 +67,28 @@ conversion = do
       then do exitSuccess
       else return ()
 
+   let test1 = (readMaybe input1 :: Maybe Integer)
+   if isNothing test1 
+      then do print "Invalid input, please try again." >> conversion >> exitSuccess
+      else return ()
+
    input2 <- getLineInt
    input3 <- getLineInt
 
-   let yearInt = (read input1 :: Integer)
+
+   let yearInt = fromJust test1
    let month = input2
    let day = input3
 
    -- check if numbers valid
    if yearInt < 0 || input2 < 0 || input3 < 0
-      then do print "Invalid input, please try again. No negative numbers allowed" >> exitSuccess
+      then do print "Invalid input, please try again. No negative numbers allowed" >> conversion >> exitSuccess
       else return ()
    
    -- check if date exists
    let inputDate = fromGregorianValid yearInt month day
    if isNothing inputDate 
-      then do print "Invalid input, please try again. Not a date" >> exitSuccess
+      then do print "Invalid input, please try again. Not a date" >> conversion >> exitSuccess
       else return ()
    
    -- start conversion
