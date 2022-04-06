@@ -1,37 +1,82 @@
 import Data.ByteString (elemIndex, isPrefixOf, putStrLn)
-import Data.List ( isPrefixOf )
+import Data.List
 import Data.Char ( isSpace )
 import qualified Control.Monad
 import Data.Typeable
--- import Data.String ()
 
--- openFile:: FilePath  -> [String]
--- openFile path = do
+data StateTest = StateTest String TypeOfState [String] -- name type text
+    deriving Show
+data TypeOfState = Start | Middle | End
+    deriving Show
 
-data StateTest = StateTest {name:: String, text:: String}
-data Transition = Transition {tname:: String, from:: String, to:: String }
+getName:: StateTest -> String 
+getName (StateTest name _ _) = name
 
-findType:: String -> String
-findType line = "anything"
+getType:: StateTest -> TypeOfState
+getType (StateTest _ t _) = t
 
--- takes line and returns line without whitespaces in beginning
--- lstrip:: [Char] -> [Char]
--- lstrip text = 
---     let first = head text
---     Control.Monad.when (isSpace first) $
---             let rest = tail text
---             return (lstrip rest)
---     return text
---     -- return text
+getText:: StateTest -> [String]
+getText (StateTest _ _ text) = text
+
+-- creates a StateTest from 
+initState:: [String] -> StateTest
+initState str = StateTest (extractStateName $ head str) (findType $ head str) (findText str)
+
+-- returns the type that the state definition has
+findType:: String -> TypeOfState
+findType (x:xs)
+    | "*" `Data.List.isPrefixOf` (dropWhile (== ' ') xs) = Start
+    | "+" `Data.List.isPrefixOf` (dropWhile (== ' ') xs) = End
+    | otherwise = Middle
+
+-- extracts the text that should be printed
+-- TODO: different if only one line!!
+findText:: [String] -> [String]
+findText str = ((tail cleaned) : (firstLast str)) ++ [(init cleanedEnd)]
+    where 
+        cleaned = (dropWhile (/= '{') $ head str)
+        cleanedEnd = (dropWhileEnd (/= '}') $ last str)
+
+firstLast::[a]->[a]
+firstLast [] = []
+firstLast [x] = []
+firstLast xs = tail (init xs)
+
+extractStateName:: String -> String
+extractStateName (x:xs) = cleanedEnd
+    where
+        cleanedStart = dropWhile (== '+') (dropWhile (== '*') xs)
+        cleanedEnd = init (dropWhileEnd (/= '{') cleanedStart)
+
+createStates:: [[String]] -> [StateTest]
+createStates [] = []
+createStates (x:xs) = initState x : createStates xs
 
 
+data Transition = Transition String String String String -- start name end text
+    deriving Show
+
+getTransitionStart:: Transition -> String
+getTransitionStart (Transition t _ _ _) = t
+
+getTransitionName:: Transition -> String
+getTransitionName (Transition _ t _ _) = t
+
+getTransitionEnd:: Transition -> String
+getTransitionEnd (Transition _ _ t _) = t
+
+getTransitionText:: Transition -> String
+getTransitionText (Transition _ _ _ t) = t
+
+initTransition:: String -> Transition
+initTransition str = Transition (start) (firstLast name) (end) (text)
+    where
+        start = filter (/=' ') (init (dropWhileEnd (/= '(') $ tail str))
+        name = dropWhileEnd (/= ')') (dropWhileEnd (/= ':') (dropWhile (/= '(') str))
+        end = filter (/=' ') (firstLast (dropWhileEnd (/= ':') $ dropWhile (/= ')') str))
+        text = tail $ dropWhile (/= ':') str
 
 
--- findFirstNonSpace:: String -> String -> String 
--- findFirstNonSpace line character = do
---     if elemIndex line character == 0
---         then return line
---         else return "" 
 
 -- how many lines contain the state
 findEnd:: [String] -> Int
@@ -47,13 +92,6 @@ findStart (x:xs)
         | otherwise = findStart xs
         where 
             test = (splitAt (findEnd (x:xs)) (x:xs))
-
--- maybe use dropWhile instead?
--- findFirstNonSpace:: String -> String 
--- findFirstNonSpace [] = []
--- findFirstNonSpace line
---         | head line == ' ' = findFirstNonSpace (tail line)
---         | otherwise = line
 
 -- if curly brace is in there
 containsEndState:: String -> Bool  
@@ -75,13 +113,18 @@ main = do
     let linesOfFiles = lines content
     -- mapM_ Prelude.putStrLn linesOfFiles
 
-    print (typeOf $ head linesOfFiles)
     let states = findStart linesOfFiles
-    print (typeOf states)
-    Prelude.putStrLn $ show states
+    -- Prelude.putStrLn $ show states
+
+    let statesConv = createStates states
+    
+    Prelude.putStrLn $ show statesConv
+    
 
     let transitions = findTransitions linesOfFiles
     print (typeOf transitions)
     Prelude.putStrLn $ show transitions
 
-    Prelude.putStrLn "Hello, World!\n"
+    let transConv = initTransition $ head transitions
+
+    Prelude.putStrLn $ show transConv
