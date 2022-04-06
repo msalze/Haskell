@@ -7,7 +7,7 @@ import Data.Typeable
 data StateTest = StateTest String TypeOfState [String] -- name type text
     deriving Show
 data TypeOfState = Start | Middle | End
-    deriving Show
+    deriving (Show, Eq)
 
 getName:: StateTest -> String 
 getName (StateTest name _ _) = name
@@ -17,6 +17,10 @@ getType (StateTest _ t _) = t
 
 getText:: StateTest -> [String]
 getText (StateTest _ _ text) = text
+
+printText:: StateTest -> IO()
+printText state = do
+    mapM_ Prelude.putStrLn $ getText state
 
 -- creates a StateTest from 
 initState:: [String] -> StateTest
@@ -76,6 +80,9 @@ initTransition str = Transition (start) (firstLast name) (end) (text)
         end = filter (/=' ') (firstLast (dropWhileEnd (/= ':') $ dropWhile (/= ')') str))
         text = tail $ dropWhile (/= ':') str
 
+createTransitions:: [String] -> [Transition]
+createTransitions [] = []
+createTransitions (x:xs) = initTransition x : createTransitions xs
 
 
 -- how many lines contain the state
@@ -106,6 +113,24 @@ findTransitions (x:xs)
         | ">" `Data.List.isPrefixOf` (dropWhile (== ' ') x) = x : (findTransitions xs)
         | otherwise = findTransitions xs
 
+-- takeInputAndAct:: IO()
+
+getLineStr :: String -> [Transition] -> IO String
+getLineStr origin transitions = do
+   line <- getLine
+   let possible = map getTransitionName (filter (\n -> getTransitionStart n == origin) transitions)
+   if elem line possible
+       then return line
+       else print "Invalid input!" >> getLineStr origin transitions
+
+
+-- doTransition :: String -> String -- TODO adjust types
+
+-- findPossibleTransitions:: String -> [Transition] -> [Transition]
+-- findPossibleTransitions str [] = []
+-- findPossibleTransitions str transitions = filter (\n -> (getType n) == Start) statesConv 
+
+
 main :: IO ()
 main = do
     let path = "../../description2/vending.machine"
@@ -117,14 +142,24 @@ main = do
     -- Prelude.putStrLn $ show states
 
     let statesConv = createStates states
-    
-    Prelude.putStrLn $ show statesConv
-    
+    -- Prelude.putStrLn $ show statesConv
 
     let transitions = findTransitions linesOfFiles
-    print (typeOf transitions)
-    Prelude.putStrLn $ show transitions
+    -- Prelude.putStrLn $ show transitions
 
-    let transConv = initTransition $ head transitions
+    let transConv = createTransitions transitions
+    -- Prelude.putStrLn $ show transConv
 
-    Prelude.putStrLn $ show transConv
+    let start =  head $ filter (\n -> (getType n) == Start) statesConv 
+    printText start
+
+    let sth = getLineStr (getName start) transConv
+
+    print (typeOf sth)
+    vart <- sth
+
+    print (typeOf vart)
+    Prelude.putStrLn vart
+
+-- TODO: check and assert that only one start exists
+-- TODO: check and assert that an end exists
