@@ -47,8 +47,6 @@ findStart (x:xs)
         | otherwise = findStart xs
         where 
             test = (splitAt (findEnd (x:xs)) (x:xs))
-            -- start = 
-            -- end = 
 
 -- maybe use dropWhile instead?
 -- findFirstNonSpace:: String -> String 
@@ -63,12 +61,12 @@ containsEndState [] = False
 containsEndState line
         | head line == '}' = True
         | otherwise = containsEndState (tail line)
--- findStart:: [String] -> SsdStart (tail lines)
 
--- printContent:: String -> IO ()
--- printContent lines = do
---     Prelude.putStrLn lines
-
+findTransitions:: [String] -> [String]
+findTransitions [] = []
+findTransitions (x:xs)
+        | ">" `Data.List.isPrefixOf` (dropWhile (== ' ') x) = x : (findTransitions xs)
+        | otherwise = findTransitions xs
 
 main :: IO ()
 main = do
@@ -78,11 +76,12 @@ main = do
     -- mapM_ Prelude.putStrLn linesOfFiles
 
     print (typeOf $ head linesOfFiles)
-    let var = return $ findFirstNonSpace (head linesOfFiles)
-    let temp = findStart linesOfFiles
-    print (typeOf var)
-    print (typeOf temp)
-    Prelude.putStrLn $ head var
-    Prelude.putStrLn $ show temp
+    let states = findStart linesOfFiles
+    print (typeOf states)
+    Prelude.putStrLn $ show states
+
+    let transitions = findTransitions linesOfFiles
+    print (typeOf transitions)
+    Prelude.putStrLn $ show transitions
 
     Prelude.putStrLn "Hello, World!\n"
