@@ -3,6 +3,7 @@ import Data.List
 import Data.Char ( isSpace )
 import qualified Control.Monad
 import Data.Typeable
+import System.Exit
 
 data StateTest = StateTest String TypeOfState [String] -- name type text
     deriving Show
@@ -115,13 +116,20 @@ findTransitions (x:xs)
 
 -- takeInputAndAct:: IO()
 
-getLineStr :: String -> [Transition] -> IO String
-getLineStr origin transitions = do
+getLineStr :: String -> [StateTest] -> [Transition] -> IO()
+getLineStr origin states transitions = do
    line <- getLine
    let possible = map getTransitionName (filter (\n -> getTransitionStart n == origin) transitions)
    if elem line possible
-       then return line
-       else print "Invalid input!" >> getLineStr origin transitions
+       then do
+           let currTransition = getTransitionEnd (head (filter (\n -> getTransitionName n == line) transitions))
+           let currState = head (filter (\n -> getName n == currTransition) states)
+           printText currState
+           case (getType currState) of
+               End -> do exitSuccess
+               _ -> getLineStr currTransition states transitions -- filters for transition
+        --    return line
+       else print "Invalid input!" >> getLineStr origin states transitions
 
 
 -- doTransition :: String -> String -- TODO adjust types
@@ -153,13 +161,13 @@ main = do
     let start =  head $ filter (\n -> (getType n) == Start) statesConv 
     printText start
 
-    let sth = getLineStr (getName start) transConv
+    getLineStr (getName start) statesConv transConv
 
-    print (typeOf sth)
-    vart <- sth
+    -- print (typeOf sth)
+    -- vart <- sth
 
-    print (typeOf vart)
-    Prelude.putStrLn vart
+    -- print (typeOf vart)
+    -- Prelude.putStrLn vart
 
 -- TODO: check and assert that only one start exists
 -- TODO: check and assert that an end exists
