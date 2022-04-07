@@ -96,7 +96,7 @@ createTransitions (x:xs) = initTransition x : createTransitions xs
 
 -- validation
 validate:: [StateTest] -> [Transition] -> IO()
-validate states [] = Prelude.putStrLn "Transitions valid"
+validate states [] = Prelude.putStrLn ""
 validate states (x:xs) 
     | elem (getTransitionStart x) names && elem (getTransitionEnd x) names = validate states xs
     | otherwise = error "Invalid start or end state of transition"
@@ -105,7 +105,7 @@ validate states (x:xs)
 
 hasStart:: [StateTest] -> IO()
 hasStart states 
-    | countStart states == 1 = Prelude.putStrLn "Start valid"
+    | countStart states == 1 = Prelude.putStrLn ""
     | otherwise = error "Start states count not valid"
 
 countStart:: [StateTest] -> Int
@@ -116,7 +116,7 @@ countStart (x:xs)
 
 hasEnd:: [StateTest] -> IO()
 hasEnd (x:xs) 
-    | getType x == End = Prelude.putStrLn "End valid"
+    | getType x == End = Prelude.putStrLn ""
     | otherwise = hasEnd xs
 
 -- util
@@ -140,7 +140,7 @@ dropUntil ch (x:xs)
 betweenBrackets:: String -> String
 betweenBrackets [] = []
 betweenBrackets str
-    | isInfixOf "(" str && isInfixOf ")" str = keepUntil ')' $ dropUntil '(' str
+    | isInfixOf "(" str && isInfixOf ")" str = dropWhileEnd (==' ') $ dropWhile (==' ') (keepUntil ')' $ dropUntil '(' str)
     | otherwise = error "Transition definition incorrect"
 
 -- functions to read input
@@ -199,7 +199,7 @@ main = do
     -- if (command:args) == ""
     --     then Prelude.putStrLn "Please enter a path to the file" >> exitFailure
     --     else return()
-    let path = "../../description2/invalid_syntax_error.machine"
+    let path = "../../description2/car.machine"
     -- let path = "../../description2/car.machine"
 
     content <- Prelude.readFile path
@@ -210,20 +210,13 @@ main = do
     -- Prelude.putStrLn $ show states
 
     let statesConv = createStates states
-    Prelude.putStrLn $ show statesConv
+    -- Prelude.putStrLn $ show statesConv
 
     let transitions = findTransitions linesOfFiles
     -- Prelude.putStrLn $ show transitions
 
     let transConv = createTransitions transitions
-    Prelude.putStrLn $ show transConv
-
-    let names = map getName statesConv
-
-    let boo1 =elem (getTransitionStart $ head transConv) names && elem (getTransitionEnd $ head transConv) names
-
-    print $ show names
-    print $ show boo1
+    -- Prelude.putStrLn $ show transConv
 
     validate statesConv transConv
     hasStart statesConv
@@ -238,5 +231,4 @@ main = do
     getLineStr (getName start) statesConv transConv
 
 
--- TODO: check and assert that only one start exists
--- TODO: check and assert that an end exists
+-- TODO: Input param?
