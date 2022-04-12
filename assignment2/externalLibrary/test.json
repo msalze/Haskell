@@ -1,0 +1,44 @@
+[
+	{
+		"MunicipalityNumber" : 1,
+		"MunicipalityName" : "Aeugst am Albis",
+		"Canton" : "ZÃ¼rich",
+		"Country" : "CH",
+		"Scenario1_RoofsOnly_PotentialSolarElectricity_GWh" : 13.43,
+		"Scenario2_RoofsOnly_PotentialSolarElectricity_GWh" : 8.7,
+		"Scenario2_RoofsOnly_PotentialSolarHeat_GWh" : 4.72,
+		"Scenario3_RoofsFacades_PotentialSolarElectricity_GWh" : 18.06,
+		"Scenario4_RoofsFacades_PotentialSolarElectricity_GWh" : 13.33,
+		"Scenario4_RoofsFacades_PotentialSolarHeat_GWh" : 4.72,
+		"Factsheet" : "https://www.uvek-gis.admin.ch/BFE/storymaps/ECH_SolarpotGemeinden/pdf/1.pdf",
+		"Methodology" : "https://www.uvek-gis.admin.ch/BFE/redirect/sol.html"
+	},
+	{
+		"MunicipalityNumber" : 2,
+		"MunicipalityName" : "Affoltern am Albis",
+		"Canton" : "ZÃ¼rich",
+		"Country" : "CH",
+		"Scenario1_RoofsOnly_PotentialSolarElectricity_GWh" : 50.06,
+		"Scenario2_RoofsOnly_PotentialSolarElectricity_GWh" : 33.83,
+		"Scenario2_RoofsOnly_PotentialSolarHeat_GWh" : 18.63,
+		"Scenario3_RoofsFacades_PotentialSolarElectricity_GWh" : 69.25,
+		"Scenario4_RoofsFacades_PotentialSolarElectricity_GWh" : 53.02,
+		"Scenario4_RoofsFacades_PotentialSolarHeat_GWh" : 18.63,
+		"Factsheet" : "https://www.uvek-gis.admin.ch/BFE/storymaps/ECH_SolarpotGemeinden/pdf/2.pdf",
+		"Methodology" : "https://www.uvek-gis.admin.ch/BFE/redirect/sol.html"
+	},
+	{
+		"MunicipalityNumber" : 3,
+		"MunicipalityName" : "Bonstetten",
+		"Canton" : "ZÃ¼rich",
+		"Country" : "CH",
+		"Scenario1_RoofsOnly_PotentialSolarElectricity_GWh" : 19.66,
+		"Scenario2_RoofsOnly_PotentialSolarElectricity_GWh" : 11.48,
+		"Scenario2_RoofsOnly_PotentialSolarHeat_GWh" : 8.79,
+		"Scenario3_RoofsFacades_PotentialSolarElectricity_GWh" : 26.72,
+		"Scenario4_RoofsFacades_PotentialSolarElectricity_GWh" : 18.54,
+		"Scenario4_RoofsFacades_PotentialSolarHeat_GWh" : 8.79,
+		"Factsheet" : "https://www.uvek-gis.admin.ch/BFE/storymaps/ECH_SolarpotGemeinden/pdf/3.pdf",
+		"Methodology" : "https://www.uvek-gis.admin.ch/BFE/redirect/sol.html"
+	}
+]
