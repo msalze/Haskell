@@ -192,14 +192,7 @@ getLineStr origin states transitions = do
 
 main :: IO ()
 main = do
-    -- (command:args) <- getArgs  
-    -- print (typeOf (command:args))
-    -- mapM_ Prelude.putStrLn (command:args)
-    -- let path = (command:args) :: FilePath 
-    -- if (command:args) == ""
-    --     then Prelude.putStrLn "Please enter a path to the file" >> exitFailure
-    --     else return()
-    let path = "../../description2/car.machine"
+    let path = "../../description2/vending.machine"
     -- let path = "../../description2/car.machine"
 
     content <- Prelude.readFile path
