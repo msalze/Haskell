@@ -37,7 +37,6 @@ findType (x:xs)
     | otherwise = Middle
 
 -- extracts the text that should be printed
--- TODO: different if only one line!!
 findText:: [String] -> [String]
 findText [x] = cleaned : []
     where
@@ -48,8 +47,6 @@ findText str = ((tail cleaned) : (firstLast str)) ++ [(init cleanedEnd)]
     where 
         cleaned = (dropWhile (/= '{') $ head str)
         cleanedEnd = (dropWhileEnd (/= '}') $ last str)
-
-
 
 extractStateName:: String -> String
 extractStateName (x:xs) = cleanedEnd
@@ -166,6 +163,7 @@ containsEndState line
         | head line == '}' = True
         | otherwise = containsEndState (tail line)
 
+-- find transition definitions in input
 findTransitions:: [String] -> [String]
 findTransitions [] = []
 findTransitions (x:xs)
@@ -215,13 +213,7 @@ main = do
     hasStart statesConv
     hasEnd statesConv
 
-
-    -- print $ show boo
-
     let start =  head $ filter (\n -> (getType n) == Start) statesConv 
     printText start
 
     getLineStr (getName start) statesConv transConv
-
-
--- TODO: Input param?

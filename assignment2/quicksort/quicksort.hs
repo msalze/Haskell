@@ -2,6 +2,9 @@ import Data.List (partition)
  
 
 -- Source: http://www.rosettacode.org/wiki/Sorting_algorithms/Quicksort#Haskell
+-- This implementation is efficient as it does not have excessive method calls. 
+-- This implementation is least efficient, if the list is already sorted as each partition will split only one element.
+-- Picking a different pivot element could help with that. However since lists are implemented as linked lists, it saves computation effort to choose the first element as pivot.
 qsort :: Ord a => [a] -> [a] -- Ord: takes in datatypes that can be ordered, input and output are a list of Ord
 qsort [] = [] -- return empty if empty input
 -- separates list in head and tail --> head is selected as pivot
