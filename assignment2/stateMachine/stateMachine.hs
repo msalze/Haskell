@@ -1,25 +1,30 @@
 import Data.ByteString (elemIndex, isPrefixOf, putStrLn)
 import Data.List
-import Data.Char ( isSpace )
+import Data.Char ( isSpace, isDigit )
 import qualified Control.Monad
 import Data.Typeable
 import System.Exit
 import System.Environment
+import System.Process
+import Control.Time
 
 -- State definition and its functions
-data StateTest = StateTest String TypeOfState [String] -- name type text
+data StateTest = StateTest String TypeOfState [String] Float -- name type text time
     deriving Show
 data TypeOfState = Start | Middle | End
     deriving (Show, Eq)
 
 getName:: StateTest -> String 
-getName (StateTest name _ _) = name
+getName (StateTest name _ _ _) = name
 
 getType:: StateTest -> TypeOfState
-getType (StateTest _ t _) = t
+getType (StateTest _ t _ _) = t
 
 getText:: StateTest -> [String]
-getText (StateTest _ _ text) = text
+getText (StateTest _ _ text _) = text
+
+getTime:: StateTest -> Float
+getTime (StateTest _ _ _ time) = time
 
 printText:: StateTest -> IO()
 printText state = do
@@ -27,7 +32,7 @@ printText state = do
 
 -- creates a StateTest from 
 initState:: [String] -> StateTest
-initState str = StateTest (extractStateName $ head str) (findType $ head str) (findText str)
+initState str = StateTest (extractStateName $ head str) (findType $ head str) (findText str) (extractTime $ head str)
 
 -- returns the type that the state definition has
 findType:: String -> TypeOfState
@@ -51,8 +56,17 @@ findText str = ((tail cleaned) : (firstLast str)) ++ [(init cleanedEnd)]
 extractStateName:: String -> String
 extractStateName (x:xs) = cleanedEnd
     where
-        cleanedStart = dropWhile (== '+') (dropWhile (== '*') xs)
-        cleanedEnd = init (dropWhileEnd (/= '{') cleanedStart)
+        cleanedStart = dropWhile (== '!') ( dropWhile (== '+') (dropWhile (== '*') xs))
+        cleanedEnd = dropWhileEnd (isDigit) (init (dropWhileEnd (/= '{') cleanedStart))
+
+extractTime:: String -> Float
+extractTime (x:xs) 
+    | isTimed = (read cleaned) / 1000 :: Float
+    | otherwise = -1
+    where
+        isTimed = "!" `Data.List.isPrefixOf` (dropWhile (== '+') (dropWhile (== '*') xs))
+        -- cleanedStart = dropWhile (/isDigit) xs
+        cleaned = filter (`elem` ['0'..'9']) (init (dropWhileEnd (/= '{') xs))
 
 createStates:: [[String]] -> [StateTest]
 createStates [] = []
@@ -172,26 +186,57 @@ findTransitions (x:xs)
 
 
 -- procedural function, interaction with user
-getLineStr :: String -> [StateTest] -> [Transition] -> IO()
+getLineStr :: StateTest -> [StateTest] -> [Transition] -> IO()
 getLineStr origin states transitions = do
-   line <- getLine
-   let possible = map getTransitionName (filter (\n -> getTransitionStart n == origin) transitions)
-   if elem line possible
-       then do
-           let currTransition = head (filter (\n -> getTransitionName n == line) transitions)
-           printTransitionText currTransition
-           let endStateName = getTransitionEnd currTransition
-           let currState = head (filter (\n -> getName n == endStateName) states)
-           printText currState
-           case (getType currState) of
-               End -> do exitSuccess
-               _ -> getLineStr endStateName states transitions
-       else print "Invalid input!" >> getLineStr origin states transitions
+    if getTime origin == -1
+        then do
+            line <- getLine
+            let possible = map getTransitionName (filter (\n -> getTransitionStart n == (getName origin)) transitions)
+            let possibleWildcards = (filter (\n -> (init n) `Data.List.isPrefixOf` line) possible)
+
+            print $ show possible
+            print $ show possibleWildcards
+            if elem line possible
+                then do
+                    let currTransition = head (filter (\n -> getTransitionName n == line) transitions)
+                    doTransition currTransition states transitions
+            else
+                if length possibleWildcards >= 1
+                    then do 
+                        let longestWildcard = longest possibleWildcards
+                        let currTransition = head (filter (\n -> getTransitionName n == longestWildcard) transitions)
+                        doTransition currTransition states transitions
+                else print "Invalid input!" >> getLineStr origin states transitions
+        else do
+            delay $ getTime origin 
+            let possible = (filter (\n -> getTransitionStart n == (getName origin)) transitions)
+            doTransition (head possible) states transitions
+
+doTransition :: Transition -> [StateTest] -> [Transition] -> IO()
+doTransition currTrans states transitions =
+    do
+        -- callCommand "clear"
+        printTransitionText currTrans
+        let endStateName = getTransitionEnd currTrans
+        let currState = head (filter (\n -> getName n == endStateName) states)
+        printText currState
+        case (getType currState) of
+            End -> do exitSuccess
+            _ -> getLineStr currState states transitions
+
+timedTransition :: StateTest -> IO()
+timedTransition state = do
+    delay $ getTime state 
+
+
+longest :: [String] -> String
+longest xss = snd $ maximum $ [(length xs, xs) | xs <- xss]
+
 
 main :: IO ()
 main = do
-    let path = "../../description2/vending.machine"
-    -- let path = "../../description2/car.machine"
+    -- let path = "../../description3/doggo.machine"
+    let path = "../../description3/vending.machine"
 
     content <- Prelude.readFile path
     let linesOfFiles = lines content
@@ -201,7 +246,7 @@ main = do
     -- Prelude.putStrLn $ show states
 
     let statesConv = createStates states
-    -- Prelude.putStrLn $ show statesConv
+    Prelude.putStrLn $ show statesConv
 
     let transitions = findTransitions linesOfFiles
     -- Prelude.putStrLn $ show transitions
@@ -216,4 +261,4 @@ main = do
     let start =  head $ filter (\n -> (getType n) == Start) statesConv 
     printText start
 
-    getLineStr (getName start) statesConv transConv
+    getLineStr start statesConv transConv
