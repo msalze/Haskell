@@ -37,9 +37,11 @@ initState str = StateTest (extractStateName $ head str) (findType $ head str) (f
 -- returns the type that the state definition has
 findType:: String -> TypeOfState
 findType (x:xs)
-    | "*" `Data.List.isPrefixOf` (dropWhile (== ' ') xs) = Start
-    | "+" `Data.List.isPrefixOf` (dropWhile (== ' ') xs) = End
+    | elem '*' relevant = Start
+    | elem '+' relevant = End
     | otherwise = Middle
+    where 
+        relevant = init (dropWhileEnd (/= '{') xs)
 
 -- extracts the text that should be printed
 findText:: [String] -> [String]
@@ -56,7 +58,7 @@ findText str = ((tail cleaned) : (firstLast str)) ++ [(init cleanedEnd)]
 extractStateName:: String -> String
 extractStateName (x:xs) = cleanedEnd
     where
-        cleanedStart = dropWhile (== '!') ( dropWhile (== '+') (dropWhile (== '*') xs))
+        cleanedStart = dropWhile (== '!') ( dropWhile (== '+') (dropWhile (== '*') (dropWhile (== '!') xs)))
         cleanedEnd = dropWhileEnd (isDigit) (init (dropWhileEnd (/= '{') cleanedStart))
 
 extractTime:: String -> Float
@@ -113,6 +115,32 @@ validate states (x:xs)
     | otherwise = error "Invalid start or end state of transition"
     where 
         names = map getName states
+
+validateAuto:: [StateTest] -> [Transition] -> IO()
+validateAuto [] transitions = Prelude.putStrLn ""
+validateAuto (x:xs) transitions
+    | getTime x == -1.0 = validateAuto xs transitions
+    | onlyOne x transitions /= 1 = error "Invalid auto forward state" 
+    | otherwise = validateAuto xs transitions
+
+onlyOne:: StateTest -> [Transition] -> Int
+onlyOne state [] = 0
+onlyOne state (x:xs) 
+    | (getTransitionStart x) == name = 1 + onlyOne state xs
+    | otherwise = onlyOne state xs
+    where 
+        name = getName state
+
+validateTiming:: [[String]] -> IO()
+validateTiming [] = Prelude.putStrLn ""
+validateTiming (x:xs) 
+    | isTimed && cleaned == "" = error "Timing has to be set"
+    | otherwise = validateTiming xs
+    where
+        relevant = init (dropWhileEnd (/= '{') $ tail $ head x)
+        isTimed = elem '!' relevant
+        cleaned = filter (`elem` ['0'..'9']) relevant
+
 
 hasStart:: [StateTest] -> IO()
 hasStart states 
@@ -193,9 +221,6 @@ getLineStr origin states transitions = do
             line <- getLine
             let possible = map getTransitionName (filter (\n -> getTransitionStart n == (getName origin)) transitions)
             let possibleWildcards = (filter (\n -> (init n) `Data.List.isPrefixOf` line) possible)
-
-            print $ show possible
-            print $ show possibleWildcards
             if elem line possible
                 then do
                     let currTransition = head (filter (\n -> getTransitionName n == line) transitions)
@@ -215,7 +240,7 @@ getLineStr origin states transitions = do
 doTransition :: Transition -> [StateTest] -> [Transition] -> IO()
 doTransition currTrans states transitions =
     do
-        -- callCommand "clear"
+        callCommand "clear"
         printTransitionText currTrans
         let endStateName = getTransitionEnd currTrans
         let currState = head (filter (\n -> getName n == endStateName) states)
@@ -236,14 +261,16 @@ longest xss = snd $ maximum $ [(length xs, xs) | xs <- xss]
 main :: IO ()
 main = do
     -- let path = "../../description3/doggo.machine"
-    let path = "../../description3/vending.machine"
-
+    let path = "../../description3/rolling.machine"
+    
     content <- Prelude.readFile path
     let linesOfFiles = lines content
     -- mapM_ Prelude.putStrLn linesOfFiles
 
     let states = findStart linesOfFiles
     -- Prelude.putStrLn $ show states
+
+    validateTiming states
 
     let statesConv = createStates states
     Prelude.putStrLn $ show statesConv
@@ -255,9 +282,11 @@ main = do
     -- Prelude.putStrLn $ show transConv
 
     validate statesConv transConv
+    validateAuto statesConv transConv
     hasStart statesConv
     hasEnd statesConv
 
+    callCommand "clear"
     let start =  head $ filter (\n -> (getType n) == Start) statesConv 
     printText start
 
